@@ -114,9 +114,12 @@ Usage:
   {{- if .context.Values.git.clone.extraVolumeMounts }}
     {{- include "common.tplvalues.render" (dict "value" .context.Values.git.clone.extraVolumeMounts "context" .context) | nindent 4 }}
   {{- end }}
-{{- if .context.Values.git.clone.extraEnvVars }}
-  env: {{- include "common.tplvalues.render" (dict "value" .context.Values.git.clone.extraEnvVars "context" .context) | nindent 4 }}
-{{- end }}
+  env:
+    - name: HOME
+      value: "/tmp"
+    {{- if .context.Values.git.clone.extraEnvVars }}
+    {{- include "common.tplvalues.render" (dict "value" .context.Values.git.clone.extraEnvVars "context" .context) | nindent 4 }}
+    {{- end }}
 {{- if or .context.Values.git.clone.extraEnvVarsCM .context.Values.git.clone.extraEnvVarsSecret }}
   envFrom:
     {{- if .context.Values.git.clone.extraEnvVarsCM }}
@@ -160,6 +163,16 @@ Usage:
     - -ec
     - |
       [[ -f "/opt/bitnami/scripts/git/entrypoint.sh" ]] && . /opt/bitnami/scripts/git/entrypoint.sh
+      {{- if .context.Values.git.dags.enabled }}
+        {{- range .context.Values.git.dags.repositories }}
+        git config --global --add safe.directory "/dags_{{ include "airflow.git.repository.name" . }}"
+        {{- end }}
+      {{- end }}
+      {{- if .context.Values.git.plugins.enabled }}
+        {{- range .context.Values.git.plugins.repositories }}
+        git config --global --add safe.directory "/plugins_{{ include "airflow.git.repository.name" . }}"
+        {{- end }}
+      {{- end }}
       while true; do
       {{- if .context.Values.git.dags.enabled }}
         {{- range .context.Values.git.dags.repositories }}
@@ -179,9 +192,12 @@ Usage:
   {{- if .context.Values.git.sync.extraVolumeMounts }}
     {{- include "common.tplvalues.render" (dict "value" .context.Values.git.sync.extraVolumeMounts "context" .context) | nindent 4 }}
   {{- end }}
-{{- if .context.Values.git.sync.extraEnvVars }}
-  env: {{- include "common.tplvalues.render" (dict "value" .context.Values.git.sync.extraEnvVars "context" .context) | nindent 4 }}
-{{- end }}
+  env:
+    - name: HOME
+      value: "/tmp"
+    {{- if .context.Values.git.sync.extraEnvVars }}
+    {{- include "common.tplvalues.render" (dict "value" .context.Values.git.sync.extraEnvVars "context" .context) | nindent 4 }}
+    {{- end }}
 {{- if or .context.Values.git.sync.extraEnvVarsCM .context.Values.git.sync.extraEnvVarsSecret }}
   envFrom:
     {{- if .context.Values.git.sync.extraEnvVarsCM }}
